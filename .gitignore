@@ -2,4 +2,5 @@
 /test/
 /.idea/
 /cmake-build-debug/
+/lib/
 /.gitignore
