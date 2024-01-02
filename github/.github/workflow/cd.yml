@@ -1,0 +1,16 @@
+# cd.yml
+name: CD
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Deploy
+        run: |
+          # Add deployment commands here
