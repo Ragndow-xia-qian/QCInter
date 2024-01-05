@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     return app.mainloop();
 }
 ```
-Please refer to the documentation in qcinter.h for detailed information on how to use the Qc class and its member functions.
+Please refer to [the documentation in docs directory](docs/Qc_Document.md) for detailed information on how to use the Qc class and its member functions.
 
 ## License
 This project is licensed under the [insert license name] License - see the [LICENSE](LICENSE) file for details.

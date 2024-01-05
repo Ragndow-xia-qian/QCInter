@@ -15,13 +15,21 @@
 #include <QIcon>
 #include <QScreen>
 #include <QDesktopWidget>
+#include <QPushButton>
+#include <QLayout>
 
 #include "window.h"
 
 namespace QCInter {
+    class Object {
+        friend class Qc;
+
+        virtual void show() = 0;
+    };
+
     class Qc {
     public:
-        Qc(int argc, char *argv[]): a(argc, argv), window{} {}
+        Qc(int argc, char *argv[]) : a(argc, argv), window{} {}
 
         ~Qc() = default;
 
@@ -53,7 +61,7 @@ namespace QCInter {
             return windowRect.height();
         }
 
-        QList<int> winfo_screens_width() {
+        static QList<int> winfo_screens_width() {
             QList<QScreen *> screens = QGuiApplication::screens();
 
             QList<int> list;
@@ -64,7 +72,7 @@ namespace QCInter {
             return list;
         }
 
-        QList<int> winfo_screens_height() {
+        static QList<int> winfo_screens_height() {
             QList<QScreen *> screens = QGuiApplication::screens();
 
             QList<int> list;
@@ -107,10 +115,16 @@ namespace QCInter {
         int mainloop() {
             window.show();
 
+            for (auto &&item: objects) {
+                item->show();
+            }
+
             return QApplication::exec();
         }
 
     private:
+        friend class Button;
+
         void setGeo(QPoint _leftTop, QPoint _rightBottom) {
             QRect geo;
 
@@ -123,6 +137,73 @@ namespace QCInter {
         QApplication a;
 
         QCInter::Window window;
+
+        QVector<Object *> objects;
+    };
+
+    class Button : Object {
+    public:
+        template<typename F = void(*)()>
+        explicit Button(Qc &window, const QString &text = "", F &&f = []{}) : window(window), button(&window.window) {
+            window.objects.append(this);
+            button.setText(text);
+            button.connect(&button, &QPushButton::clicked, std::forward<F>(f));
+        }
+
+        void pack(const QString &side = "top") {
+            if (side == "top") {
+                button.setGeometry((window.winfo_width() - button.width()) / 2, 0, button.width(), button.height());
+            } else if (side == "bottom") {
+                button.setGeometry((window.winfo_width() - button.width()) / 2, window.winfo_height() - button.height(),
+                                   button.width(), button.height());
+            } else if (side == "left") {
+                button.setGeometry(0, (window.winfo_height() - button.height()) / 2, button.width(), button.height());
+            } else if (side == "right") {
+                button.setGeometry(window.winfo_width() - button.width(), (window.winfo_height() - button.height()) / 2,
+                                   button.width(), button.height());
+            } else if (side == "center") {
+                button.setGeometry((window.winfo_width() - button.width()) / 2,
+                                   (window.winfo_height() - button.height()) / 2, button.width(), button.height());
+            } else if (side == "fill") {
+                button.setGeometry(0, 0, window.winfo_width(), window.winfo_height());
+            } else if (side == "topleft") {
+                button.setGeometry(0, 0, button.width(), button.height());
+            } else if (side == "topright") {
+                button.setGeometry(window.winfo_width() - button.width(), 0, button.width(), button.height());
+            } else if (side == "bottomleft") {
+                button.setGeometry(0, window.winfo_height() - button.height(), button.width(), button.height());
+            } else if (side == "bottomright") {
+                button.setGeometry(window.winfo_width() - button.width(), window.winfo_height() - button.height(),
+                                   button.width(), button.height());
+            } else {
+                throw std::runtime_error("pack error");
+            }
+        }
+
+        void grid(int row = 0, int column = 0) {
+            auto *layout = new QGridLayout;
+            layout->addWidget(&button, row, column);
+        }
+
+        void place(int x, int y, int width, int height) {
+            button.setGeometry(x, y, width, height);
+        }
+
+        void rel_place(int rel_x, int rel_y, int rel_width, int rel_height) {
+            int abs_x = rel_x * window.winfo_width();
+            int abs_y = rel_y * window.winfo_height();
+            int abs_width = rel_width * window.winfo_width();
+            int abs_height = rel_height * window.winfo_height();
+            button.setGeometry(abs_x, abs_y, abs_width, abs_height);
+        }
+
+    private:
+        void show() override {
+            this->button.show();
+        }
+
+        Qc &window;
+        QPushButton button;
     };
 }
 
