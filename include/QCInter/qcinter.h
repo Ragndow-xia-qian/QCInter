@@ -53,7 +53,7 @@ namespace QCInter {
             return windowRect.height();
         }
 
-        QList<int> winfo_screens_width() {
+        static QList<int> winfo_screens_width() {
             QList<QScreen *> screens = QGuiApplication::screens();
 
             QList<int> list;
@@ -64,7 +64,7 @@ namespace QCInter {
             return list;
         }
 
-        QList<int> winfo_screens_height() {
+        static QList<int> winfo_screens_height() {
             QList<QScreen *> screens = QGuiApplication::screens();
 
             QList<int> list;
